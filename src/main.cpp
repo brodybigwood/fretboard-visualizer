@@ -11,6 +11,8 @@ void init() {
 
     neckRect = SDL_FRect{10,10,dstRect.w-20,dstRect.h-20};
 
+    SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
+
     if(!SDL_Init(SDL_INIT_VIDEO)) {
         std::cout<<"failed to start sdl"<<std::endl;
         return;
@@ -53,12 +55,6 @@ void tick() {
     SDL_RenderTexture(renderer, neck.boardTexture, NULL, &neckRect);
     SDL_RenderTexture(renderer, neck.stringTexture, NULL, &neckRect);
 
-    std::vector<float> notes;
-    notes.push_back(69);
-    notes.push_back(72);
-    notes.push_back(74);
-    notes.push_back(76);
-    notes.push_back(79);
     neck.renderNotes(notes);
 
     SDL_RenderPresent(renderer);

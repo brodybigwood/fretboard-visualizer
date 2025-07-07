@@ -7,3 +7,4 @@ Neck neck;
 
 SDL_FRect dstRect;
 SDL_FRect neckRect;
+std::vector<float> notes;

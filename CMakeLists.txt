@@ -35,8 +35,11 @@ if(EMSCRIPTEN)
   set_target_properties(app PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/html/"
     SUFFIX ".html"
+    LINK_FLAGS "-sEXPORTED_FUNCTIONS=[\"_main\",\"_malloc\",\"_free\"] -sEXPORTED_RUNTIME_METHODS=[\"ccall\",\"cwrap\"] -sUSE_SDL=3 -sASSERTIONS=1"
   )
 endif()
+
+
 
 add_custom_target(CopyAssets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory

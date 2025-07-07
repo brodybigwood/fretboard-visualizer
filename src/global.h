@@ -11,3 +11,5 @@ extern SDL_FRect dstRect;
 extern SDL_FRect neckRect;
 
 extern SDL_Texture* neckTexture;
+
+extern std::vector<float> notes;

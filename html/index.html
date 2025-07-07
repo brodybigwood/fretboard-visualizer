@@ -7,7 +7,27 @@
 <body>
   <canvas id="canvas" width="800" height="600"></canvas>
 
+<input id="notes" type="text" placeholder="e.g. 60, 62, 64">
+<button onclick="handleNotesInput()">update</button>
+
+
+
+
   <script>
+
+function handleNotesInput() {
+  const input = document.getElementById('notes').value;
+  const nums = input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+
+  const nBytes = nums.length * 4;
+  const ptr = Module._malloc(nBytes);
+
+  Module.HEAPF32.set(nums, ptr >> 2);
+  Module.ccall('updateNotes', null, ['number', 'number'], [ptr, nums.length]);
+  Module._free(ptr);
+}
+
+
     var Module = {
       canvas: document.getElementById('canvas'),
       onRuntimeInitialized() {

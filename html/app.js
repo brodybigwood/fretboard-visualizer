@@ -279,10 +279,6 @@ function assert(condition, text) {
 
 // We used to include malloc/free by default in the past. Show a helpful error in
 // builds with assertions.
-function _free() {
-  // Show a helpful error since we used to include free by default in the past.
-  abort('free() called but not included in the build - add `_free` to EXPORTED_FUNCTIONS');
-}
 
 // Memory management
 
@@ -8580,6 +8576,84 @@ async function createWasm() {
       HEAP8.set(array, buffer);
     };
 
+  var getCFunc = (ident) => {
+      var func = Module['_' + ident]; // closure exported function
+      assert(func, 'Cannot call unknown function ' + ident + ', make sure it is exported');
+      return func;
+    };
+  
+  
+  
+  
+  
+  
+  
+    /**
+     * @param {string|null=} returnType
+     * @param {Array=} argTypes
+     * @param {Arguments|Array=} args
+     * @param {Object=} opts
+     */
+  var ccall = (ident, returnType, argTypes, args, opts) => {
+      // For fast lookup of conversion functions
+      var toC = {
+        'string': (str) => {
+          var ret = 0;
+          if (str !== null && str !== undefined && str !== 0) { // null string
+            ret = stringToUTF8OnStack(str);
+          }
+          return ret;
+        },
+        'array': (arr) => {
+          var ret = stackAlloc(arr.length);
+          writeArrayToMemory(arr, ret);
+          return ret;
+        }
+      };
+  
+      function convertReturnValue(ret) {
+        if (returnType === 'string') {
+          return UTF8ToString(ret);
+        }
+        if (returnType === 'boolean') return Boolean(ret);
+        return ret;
+      }
+  
+      var func = getCFunc(ident);
+      var cArgs = [];
+      var stack = 0;
+      assert(returnType !== 'array', 'Return type should not be "array".');
+      if (args) {
+        for (var i = 0; i < args.length; i++) {
+          var converter = toC[argTypes[i]];
+          if (converter) {
+            if (stack === 0) stack = stackSave();
+            cArgs[i] = converter(args[i]);
+          } else {
+            cArgs[i] = args[i];
+          }
+        }
+      }
+      var ret = func(...cArgs);
+      function onDone(ret) {
+        if (stack !== 0) stackRestore(stack);
+        return convertReturnValue(ret);
+      }
+  
+      ret = onDone(ret);
+      return ret;
+    };
+
+  
+    /**
+     * @param {string=} returnType
+     * @param {Array=} argTypes
+     * @param {Object=} opts
+     */
+  var cwrap = (ident, returnType, argTypes, opts) => {
+      return (...args) => ccall(ident, returnType, argTypes, args, opts);
+    };
+
   FS.createPreloadedFile = FS_createPreloadedFile;
   FS.staticInit();
   // Set module methods based on EXPORTED_RUNTIME_METHODS
@@ -9122,14 +9196,16 @@ var wasmImports = {
 var wasmExports;
 createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
+var _updateNotes = Module['_updateNotes'] = createExportWrapper('updateNotes', 2);
 var _main = Module['_main'] = createExportWrapper('main', 2);
 var _SDL_malloc = Module['_SDL_malloc'] = createExportWrapper('SDL_malloc', 1);
 var _SDL_free = Module['_SDL_free'] = createExportWrapper('SDL_free', 1);
+var _free = Module['_free'] = createExportWrapper('free', 1);
 var _SDL_calloc = Module['_SDL_calloc'] = createExportWrapper('SDL_calloc', 2);
 var _SDL_realloc = Module['_SDL_realloc'] = createExportWrapper('SDL_realloc', 2);
 var _strerror = createExportWrapper('strerror', 1);
 var _fflush = createExportWrapper('fflush', 1);
-var _malloc = createExportWrapper('malloc', 1);
+var _malloc = Module['_malloc'] = createExportWrapper('malloc', 1);
 var _Emscripten_HandlePointerEnter = Module['_Emscripten_HandlePointerEnter'] = createExportWrapper('Emscripten_HandlePointerEnter', 2);
 var _Emscripten_HandlePointerLeave = Module['_Emscripten_HandlePointerLeave'] = createExportWrapper('Emscripten_HandlePointerLeave', 2);
 var _Emscripten_HandlePointerGeneric = Module['_Emscripten_HandlePointerGeneric'] = createExportWrapper('Emscripten_HandlePointerGeneric', 2);
@@ -9151,6 +9227,8 @@ var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmE
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
 
+Module['ccall'] = ccall;
+Module['cwrap'] = cwrap;
 var missingLibrarySymbols = [
   'writeI53ToI64Clamped',
   'writeI53ToI64Signaling',
@@ -9185,9 +9263,6 @@ var missingLibrarySymbols = [
   'STACK_ALIGN',
   'POINTER_SIZE',
   'ASSERTIONS',
-  'getCFunc',
-  'ccall',
-  'cwrap',
   'uleb128Encode',
   'sigToWasmTypes',
   'generateFuncType',
@@ -9312,6 +9387,7 @@ var unexportedSymbols = [
   'addOnPreRun',
   'addOnExit',
   'addOnPostRun',
+  'getCFunc',
   'freeTableIndexes',
   'functionsInTableMap',
   'setValue',
