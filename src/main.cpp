@@ -1,12 +1,16 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <emscripten/emscripten.h>
+#include "global.h"
 
-SDL_Window* window;
-SDL_Renderer* renderer;
 
 
 void init() {
+
+    dstRect = SDL_FRect{0,0,1000,150};
+
+    neckRect = SDL_FRect{0,0,dstRect.w,dstRect.h};
+
     if(!SDL_Init(SDL_INIT_VIDEO)) {
         std::cout<<"failed to start sdl"<<std::endl;
         return;
@@ -14,7 +18,7 @@ void init() {
 
     std::cout<<"succ started sdl"<<std::endl;
 
-    window = SDL_CreateWindow("canvas", 900, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("canvas", dstRect.w, dstRect.h, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     if(!window) {
         std::cout<<"error: "<<SDL_GetError()<<std::endl;
@@ -29,17 +33,28 @@ void init() {
             return;
     }
         std::cout<<"created renderer"<<std::endl;
+
+    neckTexture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET,
+        neckRect.w,
+        neckRect.h
+    );
 }
 void tick() {
 
-
-    SDL_FRect dstRect{0,0,800,600};
-
     SDL_SetRenderTarget(renderer, NULL);
 
-    SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+    SDL_SetRenderDrawColor(renderer, 70,70,70,255);
+    SDL_RenderClear(renderer);
 
+    SDL_SetRenderDrawColor(renderer, 255,0,0,255);
     SDL_RenderRect(renderer, &dstRect);
+
+
+    SDL_RenderTexture(renderer, neck.boardTexture, NULL, &neckRect);
+    SDL_RenderTexture(renderer, neck.stringTexture, NULL, &neckRect);
 
     SDL_RenderPresent(renderer);
 
@@ -49,8 +64,28 @@ void tick() {
 }
 
 
+void setup() {
+    neck.width = 2; //2 inches
+    neck.length = 19.125; //neck length inches, corresponds to 3/4 25.5 scale length
+    neck.dstRect = &neckRect;
+
+    //8 string tritone tuning
+    neck.strings.push_back(22);
+    neck.strings.push_back(28);
+    neck.strings.push_back(34);
+    neck.strings.push_back(40);
+    neck.strings.push_back(46);
+    neck.strings.push_back(52);
+    neck.strings.push_back(58);
+    neck.strings.push_back(64);
+
+    neck.generateTextures();
+}
+
+
 int main() {
     init();
+    setup();
     #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(tick, 0, 1);
     #else
