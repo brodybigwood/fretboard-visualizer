@@ -35,7 +35,9 @@ void Neck::renderBoard() {
     float xCenter = boardTexture->w /2.0f;
     float yCenter = boardTexture->h / 2.0f;
 
+    bool drawMarkers = true;
 
+    if(drawMarkers)
     { // fret marker block with variable radius
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         const int markerFrets[] = {3, 5, 7, 9, 12, 15, 17, 19, 21};
@@ -87,3 +89,55 @@ void Neck:: renderStrings() {
         y += spacing;
     }
 }
+
+std::vector<SDL_FPoint> Neck::getNotePositions(float midiNum) {
+    std::vector<SDL_FPoint> positions;
+
+    float scaleLength = length * 4/3.0f;
+    float stringSpacing = dstRect->h / (strings.size() + 1.0f);
+
+    for (size_t i = 0; i < strings.size(); ++i) {
+        float openNote = strings[i];
+        float diff = midiNum - openNote;
+        float y = stringSpacing * (i + 1);
+
+        if (diff < 0) continue;
+
+        // Iterate over octaves, calculating fret as float
+        for (int octave = 0; octave <= diff / 12; ++octave) {
+            float fret = diff - 12.0f * static_cast<float>(octave);
+            if (fret >= 0.0f && fret <= 24.0f) {
+                float x = scaleLength - (scaleLength / std::pow(2.0f, fret / 12.0f));
+                positions.push_back(SDL_FPoint{x, y});
+            }
+        }
+    }
+    return positions;
+}
+
+
+
+void Neck::renderNoteDot(float x, float y, float radius, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+
+    SDL_FRect dotRect = { x - radius, y - radius, radius * 2, radius * 2 };
+    SDL_RenderFillRect(renderer, &dotRect);
+
+}
+
+void Neck::renderNotes(std::vector<float>& nums) {
+
+    float radius = 5.0f;
+    SDL_Color color = {255,0,0,255};
+
+    for (auto midiNum : nums) {
+        std::vector<SDL_FPoint> positions = getNotePositions(midiNum);
+        for (const SDL_FPoint& pos : positions) {
+            // Map from neck texture coords to dstRect screen coords
+            float screenX = dstRect->x + pos.x * (dstRect->w / length);
+            float screenY = dstRect->y + pos.y;
+            renderNoteDot(screenX, screenY, radius, color);
+        }
+    }
+}
+

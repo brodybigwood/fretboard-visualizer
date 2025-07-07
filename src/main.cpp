@@ -9,7 +9,7 @@ void init() {
 
     dstRect = SDL_FRect{0,0,1000,150};
 
-    neckRect = SDL_FRect{0,0,dstRect.w,dstRect.h};
+    neckRect = SDL_FRect{10,10,dstRect.w-20,dstRect.h-20};
 
     if(!SDL_Init(SDL_INIT_VIDEO)) {
         std::cout<<"failed to start sdl"<<std::endl;
@@ -49,12 +49,17 @@ void tick() {
     SDL_SetRenderDrawColor(renderer, 70,70,70,255);
     SDL_RenderClear(renderer);
 
-    SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-    SDL_RenderRect(renderer, &dstRect);
-
 
     SDL_RenderTexture(renderer, neck.boardTexture, NULL, &neckRect);
     SDL_RenderTexture(renderer, neck.stringTexture, NULL, &neckRect);
+
+    std::vector<float> notes;
+    notes.push_back(69);
+    notes.push_back(72);
+    notes.push_back(74);
+    notes.push_back(76);
+    notes.push_back(79);
+    neck.renderNotes(notes);
 
     SDL_RenderPresent(renderer);
 

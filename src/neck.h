@@ -19,5 +19,10 @@ class Neck {
         void renderBoard();
         void renderStrings();
 
+        void renderNoteDot(float, float, float, SDL_Color);
+        void renderNotes(std::vector<float>&);
+
+        std::vector<SDL_FPoint> getNotePositions(float);
+
         void generateTextures();
 };
