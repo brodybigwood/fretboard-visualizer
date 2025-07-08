@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <emscripten/emscripten.h>
+#include <nlohmann/detail/meta/type_traits.hpp>
 #include "bindings.h"
 #include "global.h"
 
@@ -56,16 +57,47 @@ void tick() {
     SDL_RenderTexture(renderer, neck.boardTexture, NULL, &neckRect);
     SDL_RenderTexture(renderer, neck.stringTexture, NULL, &neckRect);
 
-    std::vector<float> noteOns;
-    auto& activeInst =  song.instruments[0];
-    for (const auto& ev : activeInst.events) {
-        if (ev.type == 1) {
-            noteOns.push_back(ev.note);
+    struct Note {
+        int id;
+        float note;
+    };
+
+    static std::vector<Note> activeNotes;
+
+    auto& inst = song.instruments[0];
+
+    float window = 0.1;
+    float time = songTime;
+    for(auto& event : inst.events) {
+        //std::cout<<"type: "<<event.type<<", id: "<<event.id<<std::endl;
+        if(event.time <= time + window && event.time >= time - window) {
+            auto it = std::find_if(activeNotes.begin(), activeNotes.end(),[&](const auto& n){ return n.id == event.id; });
+            switch(event.type) {
+                case 0:
+                    if (it != activeNotes.end()) {
+                        activeNotes.erase(it);
+                    }
+                    break;
+                case 1:
+                    if (it == activeNotes.end()) {
+                        Note newNote{event.id, event.note};
+                        activeNotes.push_back(newNote);
+                    }
+                    break;
+            }
         }
     }
 
-    neck.renderNotes(noteOns);
-    std::cout<<songTime<<std::endl;
+    // Extract pitches for rendering
+    std::vector<float> pitches;
+    pitches.reserve(activeNotes.size());
+    for (const auto& n : activeNotes) {
+        pitches.push_back(n.note);
+    }
+
+    neck.renderNotes(pitches);
+
+
 
     SDL_RenderPresent(renderer);
 

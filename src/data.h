@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <string>
 #include <nlohmann/json.hpp>
@@ -9,6 +10,7 @@ struct Event {
     float note;
     int velocity;
     float time;
+    int id;
 };
 
 struct Instrument {
@@ -27,7 +29,8 @@ inline Event parseEvent(const json& j) {
         j.value("type", 0),
         j.value("note", 0.0f),
         j.value("velocity", 0),
-        j.value("time", 0.0f)
+        j.value("time", 0.0f),
+        j.value("id", -1)
     };
 }
 
