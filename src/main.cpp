@@ -46,6 +46,47 @@ void init() {
         neckRect.h
     );
 }
+
+
+struct Note {
+    int id;
+    float note;
+};
+
+void updateActiveNotes(std::vector<Note>& activeNotes, const Event& event) {
+    auto it = std::find_if(activeNotes.begin(), activeNotes.end(), [&](const Note& n){ return n.id == event.id; });
+    switch(event.type) {
+        case 0: // Note off
+            if(it != activeNotes.end()) activeNotes.erase(it);
+            break;
+        case 1: // Note on
+            if(it == activeNotes.end()) activeNotes.push_back({event.id, event.note});
+            break;
+    }
+}
+
+std::vector<float> getActivePitchesAtTime(const Instrument& inst, float queryTime) {
+    std::vector<float> pitches;
+    // For each note on, find corresponding note off and check if queryTime lies in that interval
+    for(size_t i = 0; i < inst.events.size(); ++i) {
+        const Event& e = inst.events[i];
+        if(e.type != 1) continue; // skip if not note on
+
+        // Find matching note off
+        auto offIt = std::find_if(inst.events.begin() + i + 1, inst.events.end(), [&](const Event& ev) {
+            return ev.type == 0 && ev.id == e.id;
+        });
+
+        float offTime = (offIt != inst.events.end()) ? offIt->time : std::numeric_limits<float>::max();
+
+        if(e.time <= queryTime && queryTime <= offTime) {
+            pitches.push_back(e.note);
+        }
+    }
+    return pitches;
+}
+
+
 void tick() {
 
     SDL_SetRenderTarget(renderer, NULL);
@@ -57,44 +98,9 @@ void tick() {
     SDL_RenderTexture(renderer, neck.boardTexture, NULL, &neckRect);
     SDL_RenderTexture(renderer, neck.stringTexture, NULL, &neckRect);
 
-    struct Note {
-        int id;
-        float note;
-    };
-
-    static std::vector<Note> activeNotes;
 
     auto& inst = song.instruments[0];
-
-    float window = 0.1;
-    float time = songTime;
-    for(auto& event : inst.events) {
-        //std::cout<<"type: "<<event.type<<", id: "<<event.id<<std::endl;
-        if(event.time <= time + window && event.time >= time - window) {
-            auto it = std::find_if(activeNotes.begin(), activeNotes.end(),[&](const auto& n){ return n.id == event.id; });
-            switch(event.type) {
-                case 0:
-                    if (it != activeNotes.end()) {
-                        activeNotes.erase(it);
-                    }
-                    break;
-                case 1:
-                    if (it == activeNotes.end()) {
-                        Note newNote{event.id, event.note};
-                        activeNotes.push_back(newNote);
-                    }
-                    break;
-            }
-        }
-    }
-
-    // Extract pitches for rendering
-    std::vector<float> pitches;
-    pitches.reserve(activeNotes.size());
-    for (const auto& n : activeNotes) {
-        pitches.push_back(n.note);
-    }
-
+    std::vector<float> pitches = getActivePitchesAtTime(inst, songTime);
     neck.renderNotes(pitches);
 
 
