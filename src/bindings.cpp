@@ -8,6 +8,13 @@ using json = nlohmann::json;
 
 extern "C" {
 
+    float songTime = 0.0f;
+
+    EMSCRIPTEN_KEEPALIVE
+    float* getTimePtr() {
+        return &songTime;
+    }
+
     EMSCRIPTEN_KEEPALIVE
     void updateNotes(float* newNotes, int count) {
         if (count > 0) std::cout << newNotes[0] << std::endl;

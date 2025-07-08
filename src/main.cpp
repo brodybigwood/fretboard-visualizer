@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL3/SDL.h>
 #include <emscripten/emscripten.h>
+#include "bindings.h"
 #include "global.h"
 
 
@@ -64,7 +65,7 @@ void tick() {
     }
 
     neck.renderNotes(noteOns);
-
+    std::cout<<songTime<<std::endl;
 
     SDL_RenderPresent(renderer);
 

@@ -16,6 +16,8 @@
 
   <script>
 
+var songTime = 0;
+
 function handleNotesInput() {
   const input = document.getElementById('notes').value;
   const nums = input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
@@ -44,20 +46,28 @@ function loadSong() {
 }
 
 
-
-
-
-
-
-
     var Module = {
       canvas: document.getElementById('canvas'),
       onRuntimeInitialized() {
         console.log('WASM app ready');
+          timePtr = Module.ccall('getTimePtr', 'number', [], []);
+          timeHeap = new Float32Array(Module.HEAPF32.buffer, timePtr, 1);
       }
     };
+
+
+
+
+  var timePtr;
+  var timeHeap;
+
+  function updateTime() {
+  timeHeap[0] = songTime;
+}
   </script>
 
     <script src="app.js"></script>
+
+    <script></script>
 </body>
 </html>

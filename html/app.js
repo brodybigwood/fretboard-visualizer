@@ -9201,6 +9201,7 @@ var wasmImports = {
 var wasmExports;
 createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
+var _getTimePtr = Module['_getTimePtr'] = createExportWrapper('getTimePtr', 0);
 var _updateNotes = Module['_updateNotes'] = createExportWrapper('updateNotes', 2);
 var _recieveJSON = Module['_recieveJSON'] = createExportWrapper('recieveJSON', 1);
 var _main = Module['_main'] = createExportWrapper('main', 2);
