@@ -1,0 +1,11 @@
+body {
+    color: white;
+    background-color: rgba(50,50,50,1);
+}
+
+button {
+    color: white;
+    border: 1px solid white;
+    background-color: rgba(70,70,70,1);
+}
+

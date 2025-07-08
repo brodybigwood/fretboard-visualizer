@@ -3,71 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <title>Custom SDL3 WASM App</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="canvas" width="800" height="600"></canvas>
 
-<input id="notes" type="text" placeholder="e.g. 60, 62, 64">
-<button onclick="handleNotesInput()">update</button>
+  <input id="notes" type="text" placeholder="e.g. 60, 62, 64">
+  <button onclick="handleNotesInput()">update</button>
 
-<input id="link" type="text" placeholder="url to song json">
-<button onclick="loadSong()">update</button>
+  <input id="link" type="text" placeholder="url to song json">
+  <button onclick="loadSong()">update</button>
 
+  <div id="videoInput" style="margin: 10px 0; display: flex; gap: 8px;">
+    <input id="ytUrl" type="text" placeholder="YouTube URL"
+      style="flex:1; padding: 6px; background: #333; color: white; border: 1px solid white; border-radius: 4px;" />
+    <button onclick="loadVideo()" class="control">Load</button>
+  </div>
 
-  <script>
+  <div id="player" style="width:0; height:0; overflow:hidden; position:absolute;"></div>
 
-var songTime = 0;
+  <button onclick="seek(-5)" class="control">-5s</button>
+  <button onclick="playVideo()" class="control">Play</button>
+  <button onclick="pauseVideo()" class="control">Pause</button>
+  <button onclick="seek(5)" class="control">+5s</button>
+  <button onclick="restartVideo()" class="control">Restart</button>
 
-function handleNotesInput() {
-  const input = document.getElementById('notes').value;
-  const nums = input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
-
-  const nBytes = nums.length * 4;
-  const ptr = Module._malloc(nBytes);
-
-  Module.HEAPF32.set(nums, ptr >> 2);
-  Module.ccall('updateNotes', null, ['number', 'number'], [ptr, nums.length]);
-  Module._free(ptr);
-}
-
-
-function loadSong() {
-  link = document.getElementById('link').value;
-  fetch(link)
-    .then(res => res.json())
-    .then(obj => {
-      const str = JSON.stringify(obj);
-      const len = lengthBytesUTF8(str) + 1;
-      const ptr = Module._malloc(len);
-      stringToUTF8(str, ptr, len);
-      Module.ccall('recieveJSON', null, ['number'], [ptr]);
-      Module._free(ptr);
-    });
-}
-
-
-    var Module = {
-      canvas: document.getElementById('canvas'),
-      onRuntimeInitialized() {
-        console.log('WASM app ready');
-          timePtr = Module.ccall('getTimePtr', 'number', [], []);
-          timeHeap = new Float32Array(Module.HEAPF32.buffer, timePtr, 1);
-      }
-    };
-
-
-
-
-  var timePtr;
-  var timeHeap;
-
-  function updateTime() {
-  timeHeap[0] = songTime;
-}
-  </script>
-
-    <script src="app.js"></script>
-
-    <script></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="script.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
