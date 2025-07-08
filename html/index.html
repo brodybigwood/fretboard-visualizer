@@ -10,7 +10,8 @@
 <input id="notes" type="text" placeholder="e.g. 60, 62, 64">
 <button onclick="handleNotesInput()">update</button>
 
-
+<input id="link" type="text" placeholder="url to song json">
+<button onclick="loadSong()">update</button>
 
 
   <script>
@@ -26,6 +27,27 @@ function handleNotesInput() {
   Module.ccall('updateNotes', null, ['number', 'number'], [ptr, nums.length]);
   Module._free(ptr);
 }
+
+
+function loadSong() {
+  link = document.getElementById('link').value;
+  fetch(link)
+    .then(res => res.json())
+    .then(obj => {
+      const str = JSON.stringify(obj);
+      const len = lengthBytesUTF8(str) + 1;
+      const ptr = Module._malloc(len);
+      stringToUTF8(str, ptr, len);
+      Module.ccall('recieveJSON', null, ['number'], [ptr]);
+      Module._free(ptr);
+    });
+}
+
+
+
+
+
+
 
 
     var Module = {

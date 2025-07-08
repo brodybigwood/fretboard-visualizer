@@ -5,6 +5,7 @@ extern "C" {
     #endif
 
     void updateNotes(float* newNotes, int count);
+    void recieveJSON(const char*);
 
     #ifdef __cplusplus
 }

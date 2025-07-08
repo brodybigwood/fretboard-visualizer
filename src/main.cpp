@@ -55,7 +55,16 @@ void tick() {
     SDL_RenderTexture(renderer, neck.boardTexture, NULL, &neckRect);
     SDL_RenderTexture(renderer, neck.stringTexture, NULL, &neckRect);
 
-    neck.renderNotes(notes);
+    std::vector<float> noteOns;
+    auto& activeInst =  song.instruments[0];
+    for (const auto& ev : activeInst.events) {
+        if (ev.type == 1) {
+            noteOns.push_back(ev.note);
+        }
+    }
+
+    neck.renderNotes(noteOns);
+
 
     SDL_RenderPresent(renderer);
 

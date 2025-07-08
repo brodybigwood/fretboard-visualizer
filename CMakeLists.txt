@@ -25,6 +25,8 @@ add_subdirectory(vendored/SDL_ttf EXCLUDE_FROM_ALL)
 add_executable(app ${SOURCES})
 target_compile_definitions(app PRIVATE _DEBUG)
 
+target_include_directories(app PRIVATE vendored)
+
 target_link_libraries(app PRIVATE
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
