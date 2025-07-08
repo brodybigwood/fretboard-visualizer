@@ -99,18 +99,11 @@ std::vector<SDL_FPoint> Neck::getNotePositions(float midiNum) {
     for (size_t i = 0; i < strings.size(); ++i) {
         float openNote = strings[i];
         float diff = midiNum - openNote;
-        float y = stringSpacing * (i + 1);
+        float y = stringSpacing * (strings.size() - i);
 
-        if (diff < 0) continue;
-
-        // Iterate over octaves, calculating fret as float
-        for (int octave = 0; octave <= diff / 12; ++octave) {
-            float fret = diff - 12.0f * static_cast<float>(octave);
-            if (fret >= 0.0f && fret <= 24.0f) {
-                float x = scaleLength - (scaleLength / std::pow(2.0f, fret / 12.0f));
-                positions.push_back(SDL_FPoint{x, y});
-            }
-        }
+        if (diff < 0 || diff > 24) continue;
+        float x = scaleLength - (scaleLength / std::pow(2.0f, diff / 12.0f));
+        positions.push_back(SDL_FPoint{x, y});
     }
     return positions;
 }
