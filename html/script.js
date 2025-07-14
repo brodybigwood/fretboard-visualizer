@@ -10,9 +10,11 @@ function extractVideoId(url) {
     return match ? match[1] : null;
 }
 
-function loadVideo() {
-    const url = document.getElementById('ytUrl').value;
-    const id = extractVideoId(url);
+function loadVideo(id=null) {
+    if(!id) {
+        const url = document.getElementById('ytUrl').value;
+        id = extractVideoId(url);
+    }
     if (!id) return alert("invalid url");
 
     if (playerReady) {
@@ -136,6 +138,7 @@ function sanitizeSong(obj) {
 
 function setSong(obj) {
     const sanitized = sanitizeSong(obj);
+    loadVideo(obj.link);
     const str = JSON.stringify(sanitized);
     const len = lengthBytesUTF8(str) + 1;
     const ptr = Module._malloc(len);
@@ -154,3 +157,56 @@ var Module = {
     timeHeap = new Float32Array(Module.HEAPF32.buffer, timePtr, 1);
     }
 };
+
+
+
+
+const progressContainer = document.getElementById('progressContainer');
+const progressBar = document.getElementById('progressBar');
+
+function updateProgressBar() {
+    if (playerReady && player && typeof player.getCurrentTime === 'function' && typeof player.getDuration === 'function') {
+        const current = player.getCurrentTime();
+        const duration = player.getDuration();
+        if (duration > 0) {
+            const percent = (current / duration) * 100;
+            progressBar.style.width = percent + '%';
+        }
+    }
+    requestAnimationFrame(updateProgressBar);
+}
+
+progressContainer.addEventListener('click', e => {
+    if (!playerReady) return;
+    const rect = progressContainer.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const newTime = (clickX / rect.width) * player.getDuration();
+    player.seekTo(newTime, true);
+});
+
+window.addEventListener('keydown', e => {
+    if (!playerReady) return;
+    switch (e.key) {
+        case 'ArrowLeft':
+            seek(-5);
+            break;
+        case 'ArrowRight':
+            seek(5);
+            break;
+        case ' ':
+            e.preventDefault();
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) pauseVideo();
+            else playVideo();
+            break;
+    }
+});
+
+if (playerReady) updateProgressBar();
+else {
+    const checkReady = setInterval(() => {
+        if (playerReady) {
+            updateProgressBar();
+            clearInterval(checkReady);
+        }
+    }, 100);
+}

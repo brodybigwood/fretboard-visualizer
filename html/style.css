@@ -9,3 +9,49 @@ button {
     background-color: rgba(70,70,70,1);
 }
 
+button:hover {
+    background-color: rgba(100,100,100,1);
+}
+
+button:active {
+    background-color: rgba(130,130,130,1);
+}
+
+#topContainer {
+    display: flex;
+    flex-direction: row;
+}
+
+#playerContainer {
+    width: 1000px;
+    border: 1px solid #444;
+    padding: 12px;
+    background: #111;
+}
+
+#controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.control {
+    padding: 6px 12px;
+}
+
+#progressContainer {
+    flex: 1;
+    height: 16px;
+    background: #222;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#progressBar {
+    width: 0%;
+    height: 100%;
+    background: #4caf50;
+    border-radius: 8px;
+}
