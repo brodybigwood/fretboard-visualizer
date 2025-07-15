@@ -210,3 +210,37 @@ else {
         }
     }, 100);
 }
+
+
+
+const basePath = 'https://brodybigwood.com/file/json/songs/';
+const manifestUrl = basePath + 'manifest.json';
+
+function populateSongList() {
+    fetch(manifestUrl)
+    .then(res => res.json())
+    .then(data => {
+        const list = document.getElementById('songList');
+        const sorted = data.songs.slice().sort((a, b) => a.localeCompare(b));
+        for (const file of sorted) {
+            fetch(basePath + file)
+            .then(res => res.json())
+            .then(song => {
+                const li = document.createElement('li');
+                li.textContent = `${song.name || file} - ${song.artist || 'Unknown'}`;
+                li.style.cursor = 'pointer';
+                li.style.padding = '4px';
+                li.onmouseenter = () => li.style.background = '#333';
+                li.onmouseleave = () => li.style.background = 'transparent';
+                li.onclick = () => {
+                    document.getElementById('link').value = basePath + file;
+                    loadSong();
+                };
+                document.getElementById('songList').appendChild(li);
+            });
+        }
+    });
+}
+
+populateSongList();
+
