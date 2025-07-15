@@ -64,14 +64,23 @@ dropzone.addEventListener('drop', async e => {
     dropzone.style.borderColor = '#555';
 
     const file = e.dataTransfer.files[0];
-    if (!file || (!file.name.endsWith('.mid') && !file.name.endsWith('.midi'))) {
-        alert('Drop a valid MIDI file.');
-        return;
+    if (!file) return;
+
+    if (file.name.endsWith('.mid') || file.name.endsWith('.midi')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const midi = new Midi(arrayBuffer);
+        const jsonString = midiToJSON(midi, file.name);
+        setSong(jsonString);
+    } else if (file.name.endsWith('.json')) {
+        try {
+            const text = await file.text();
+            const obj = JSON.parse(text);
+            setSong(obj);
+        } catch {
+            alert('Invalid JSON file.');
+        }
+    } else {
+        alert('Please drop a MIDI or JSON file.');
     }
-
-    const arrayBuffer = await file.arrayBuffer();
-    const midi = new Midi(arrayBuffer);
-    const jsonString = midiToJSON(midi, file.name);
-
-    setSong(jsonString);
 });
+

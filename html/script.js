@@ -136,8 +136,11 @@ function sanitizeSong(obj) {
     return safeObj;
 }
 
+let currentSongData = null;
+
 function setSong(obj) {
     const sanitized = sanitizeSong(obj);
+    currentSongData = sanitized;
     loadVideo(obj.link);
     const str = JSON.stringify(sanitized);
     const len = lengthBytesUTF8(str) + 1;
@@ -244,3 +247,36 @@ function populateSongList() {
 
 populateSongList();
 
+function downloadCurrentJSON() {
+    if (!player || !player.getVideoData) {
+        alert("Video must be loaded first.");
+        return;
+    }
+    if (!currentSongData) {
+        alert("No song data loaded.");
+        return;
+    }
+
+    const name = prompt("Enter song name:", currentSongData.name || "Untitled") || "Untitled";
+    const artist = prompt("Enter artist name:", currentSongData.artist || "Unknown") || "Unknown";
+    const link = player.getVideoData().video_id;
+    const offset = document.getElementById('offset').value;
+
+    const jsonToDownload = {
+        name,
+        artist,
+        link,
+        offset,
+        instruments: currentSongData.instruments || [{ name: "guitar", events: [] }]
+    };
+
+    const blob = new Blob([JSON.stringify(jsonToDownload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/\s+/g, '_')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
