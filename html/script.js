@@ -64,7 +64,7 @@ function restartVideo() {
 
 function loop() {
     if (playerReady && typeof player.getPlayerState === 'function' && player.getPlayerState() === YT.PlayerState.PLAYING) {
-    songTime = player.getCurrentTime() - document.getElementById('offset').value;
+    songTime = player.getCurrentTime() + document.getElementById('offset').value;
     if (timeHeap) timeHeap[0] = songTime;
     }
     requestAnimationFrame(loop);
@@ -101,8 +101,14 @@ function sanitizeSong(obj) {
     safeObj.name = typeof obj.name === 'string' ? obj.name : '';
     if (safeObj.name === '') console.warn('Missing or invalid song name');
 
-    safeObj.file = typeof obj.file === 'string' ? obj.file : '';
-    if (safeObj.file === '') console.warn('Missing or invalid song file');
+    safeObj.artist = typeof obj.artist === 'string' ? obj.artist : '';
+    if (safeObj.artist === '') console.warn('Missing or invalid artist');
+
+    safeObj.link = typeof obj.link === 'string' ? obj.link : '';
+    if (safeObj.link === '') console.warn('Missing or invalid song link');
+
+    safeObj.offset = typeof obj.offset === 'number' ? obj.offset : 0;
+    if (typeof safeObj.offset !== 'number') console.warn('Missing or invalid offset');
 
     safeObj.instruments = Array.isArray(obj.instruments)
     ? obj.instruments.map((inst, i) => {
@@ -260,7 +266,7 @@ function downloadCurrentJSON() {
     const name = prompt("Enter song name:", currentSongData.name || "Untitled") || "Untitled";
     const artist = prompt("Enter artist name:", currentSongData.artist || "Unknown") || "Unknown";
     const link = player.getVideoData().video_id;
-    const offset = document.getElementById('offset').value;
+    const offset = parseFloat(document.getElementById('offset').value) || 0.0;
 
     const jsonToDownload = {
         name,
