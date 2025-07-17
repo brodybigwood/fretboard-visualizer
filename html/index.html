@@ -5,6 +5,7 @@
   <title>Custom SDL3 WASM App</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
 
@@ -16,11 +17,10 @@
       <div id="progressContainer">
         <div id="progressBar"></div>
       </div>
-      <button onclick="seek(-5)" class="control">-5s</button>
-      <button onclick="playVideo()" class="control">Play</button>
-      <button onclick="pauseVideo()" class="control">Pause</button>
-      <button onclick="seek(5)" class="control">+5s</button>
-      <button onclick="restartVideo()" class="control">Restart</button>
+      <button onclick="seek(-5)" class="control"><span class="material-icons">fast_rewind</span></button>
+      <button id="playPauseBtn" class="control" onclick="togglePlayPause()"><span class="material-icons" id="playPauseIcon">play_arrow</span></button>
+      <button onclick="seek(5)" class="control"><span class="material-icons">fast_forward</span></button>
+      <button onclick="restartVideo()" class="control"><span class="material-icons">restart_alt</span></button>
     </div>
 
     <div style="margin-top: 10px; width: 100%; font-family: Arial, sans-serif;">

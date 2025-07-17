@@ -32,13 +32,23 @@ button:active {
 #controls {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 5px;
     margin-top: 12px;
 }
 
 .control {
-    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    box-sizing: border-box;
+    height: 20px;
 }
+.material-icons {
+    font-size: 18px;
+    line-height: 1;
+}
+
 
 #progressContainer {
     flex: 1;

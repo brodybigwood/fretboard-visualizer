@@ -34,18 +34,32 @@ function loadVideo(id=null) {
             playerReady = true;
             console.log('player ready');
             requestAnimationFrame(loop);
-        }
+        },
+        'onStateChange': onPlayerStateChange
         }
     });
     }
 }
 
-function playVideo() {
-    if (playerReady) player.playVideo();
+function togglePlayPause() {
+    if (!playerReady) return;
+
+    const icon = document.getElementById('playPauseIcon');
+    const state = player.getPlayerState();
+
+    if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+        icon.textContent = 'play_arrow';
+    } else {
+        player.playVideo();
+        icon.textContent = 'pause';
+    }
 }
 
-function pauseVideo() {
-    if (playerReady) player.pauseVideo();
+function onPlayerStateChange(event) {
+    const icon = document.getElementById('playPauseIcon');
+    if (event.data === YT.PlayerState.PLAYING) icon.textContent = 'pause';
+    else icon.textContent = 'play_arrow';
 }
 
 function seek(seconds) {
