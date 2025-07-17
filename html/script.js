@@ -286,3 +286,13 @@ function downloadCurrentJSON() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+
+const speedSlider = document.getElementById('speedSlider');
+const speedLabel = document.getElementById('speedLabel');
+
+speedSlider.addEventListener('input', () => {
+    const rate = parseFloat(speedSlider.value);
+    speedLabel.textContent = rate.toFixed(2) + 'x';
+    if (player && player.setPlaybackRate) player.setPlaybackRate(rate);
+});
