@@ -76,10 +76,16 @@ function restartVideo() {
     }
 }
 
+var offset = 0;
+
+function getOffset() {         //how early to show notes in realtime
+    return offset + (parseFloat(document.getElementById('offset').value) || 0);
+}
+
 function loop() {
     if (playerReady && typeof player.getPlayerState === 'function' && player.getPlayerState() === YT.PlayerState.PLAYING) {
-    songTime = player.getCurrentTime() + document.getElementById('offset').value;
-    if (timeHeap) timeHeap[0] = songTime;
+        songTime = player.getCurrentTime() + getOffset()*player.getPlaybackRate();
+        if (timeHeap) timeHeap[0] = songTime;
     }
     requestAnimationFrame(loop);
 }
@@ -162,6 +168,7 @@ function setSong(obj) {
     const sanitized = sanitizeSong(obj);
     currentSongData = sanitized;
     loadVideo(obj.link);
+    offset = obj.offset;
     const str = JSON.stringify(sanitized);
     const len = lengthBytesUTF8(str) + 1;
     const ptr = Module._malloc(len);
@@ -280,13 +287,12 @@ function downloadCurrentJSON() {
     const name = prompt("Enter song name:", currentSongData.name || "Untitled") || "Untitled";
     const artist = prompt("Enter artist name:", currentSongData.artist || "Unknown") || "Unknown";
     const link = player.getVideoData().video_id;
-    const offset = parseFloat(document.getElementById('offset').value) || 0.0;
 
     const jsonToDownload = {
         name,
         artist,
         link,
-        offset,
+        offset: getOffset(),
         instruments: currentSongData.instruments || [{ name: "guitar", events: [] }]
     };
 
